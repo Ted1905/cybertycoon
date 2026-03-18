@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberTycoon 2026: Red vs Blue Team</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="news-ticker-container">
+        <div class="news-ticker-content">
+            <span id="news-text">
+                <i class="fas fa-satellite-dish"></i> <span data-i18n="news_starting">Sistem Başlatılıyor... SiberTycoon piyasaya giriş yapıyor. Dünyanın yeni bir koruyucuya (veya tehdide) ihtiyacı var...</span>
+            </span>
+        </div>
+    </div>
+
+    <header class="hud-container">
+        <div class="hud-left">
+            <div class="company-logo">
+                <i class="fas fa-shield-halved"></i> CyberTycoon
+            </div>
+            <div class="karma-wrapper">
+                <div class="karma-labels">
+                    <span class="label-red"><i class="fas fa-user-ninja"></i> <span data-i18n="red_team">Red Team</span></span>
+                    <span class="label-blue"><i class="fas fa-user-shield"></i> <span data-i18n="blue_team">Blue Team</span></span>
+                </div>
+                <div class="karma-bar-bg">
+                    <div id="karma-indicator" class="karma-pointer"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="hud-center">
+            <div class="level-wrapper">
+                <div class="level-info">
+                    <span id="player-title" class="title-text">Stajyer (Intern)</span>
+                    <span id="player-level" class="level-text">Lvl 1</span>
+                </div>
+                <div class="xp-bar-bg">
+                    <div id="xp-bar-fill" class="xp-fill"></div>
+                </div>
+                <div class="xp-text">
+                    <span id="current-xp">0</span> / <span id="target-xp">4500</span> XP
+                </div>
+            </div>
+            
+            <div class="status-indicators" style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:8px;">
+                <div class="stealth-wrapper" title="Yakalanma riskini belirler">
+                    <i class="fas fa-user-secret"></i> <span data-i18n="stealth">Gizlilik:</span> <span id="stealth-value">%0</span>
+                </div>
+                <div class="stealth-wrapper" style="background:rgba(16, 185, 129, 0.1); border-color:rgba(16, 185, 129, 0.3); color:#10b981;" title="Şirketin Güven Skoru">
+                    <i class="fas fa-star"></i> <span data-i18n="reputation">İtibar:</span> <span id="itibar-value">%100</span>
+                </div>
+                <div class="stealth-wrapper hidden" id="wanted-wrapper" style="background:rgba(239, 68, 68, 0.1); border-color:rgba(239, 68, 68, 0.5); color:#ef4444;" title="Aranma Seviyesi (Interpol/FBI)">
+                    <span data-i18n="wanted">Aranma:</span> <span id="wanted-stars"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="hud-right">
+            <div class="economy-stats">
+                <div class="stat-box fiat-box">
+                    <div class="stat-label" data-i18n="company_vault">Şirket Kasası</div>
+                    <div id="money-display" class="stat-value text-green">0 ₺</div>
+                </div>
+                <div class="stat-box crypto-box">
+                    <div class="stat-label" data-i18n="crypto_wallet">Kripto Cüzdan</div>
+                    <div id="crypto-display" class="stat-value text-gold">0.0000 BTC</div>
+                </div>
+                <div class="stat-box flow-box">
+                    <div class="stat-label" data-i18n="net_flow">Net Akış (Saniye)</div>
+                    <div class="flow-details">
+                        <span id="income-display" class="text-blue" title="Pasif Gelir">+0 ₺</span>
+                        <span class="flow-divider">|</span>
+                        <span id="expense-display" class="text-red" title="Sunucu & Elektrik Gideri">-0 ₺</span>
+                    </div>
+                </div>
+            </div>
+            <div class="system-controls">
+                <button id="btn-language" class="sys-btn text-main" title="Dil / Language" style="font-weight:bold; font-size: 0.9rem;">
+                    <i class="fas fa-globe"></i> <span id="lang-indicator">EN</span>
+                </button>
+                <button id="btn-achievements" class="sys-btn text-gold" title="Başarımlar (Kupa)" onclick="document.getElementById('achievements-panel').classList.add('open')">
+                    <i class="fas fa-trophy"></i>
+                </button>
+                <button id="btn-guide" class="sys-btn text-blue" title="Siber Rehber (Hacker El Kitabı)" onclick="document.getElementById('guide-panel').classList.add('open')">
+                    <i class="fas fa-book"></i>
+                </button>
+                <button id="btn-settings" class="sys-btn" title="Ayarlar" onclick="document.getElementById('settings-panel').classList.add('open')">
+                    <i class="fas fa-cog"></i>
+                </button>
+                <button id="btn-hard-reset" class="sys-btn btn-danger" title="Tüm Kaydı Sil ve Sıfırla">
+                    <i class="fas fa-power-off"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="game-wrapper">
+
+        <aside class="left-panel">
+            <nav class="panel-tabs">
+                <button class="tab-btn active" data-target="tab-blue-team">
+                    <i class="fas fa-shield-virus"></i> <span data-i18n="tab_defense">Savunma</span>
+                </button>
+                <button class="tab-btn text-red" data-target="tab-red-team">
+                    <i class="fas fa-skull-crossbones"></i> <span data-i18n="tab_attack">Saldırı</span>
+                </button>
+                <button class="tab-btn" data-target="tab-system">
+                    <i class="fas fa-server"></i> <span data-i18n="tab_server">Sistem Odası</span>
+                </button>
+                <button class="tab-btn" data-target="tab-ops">
+                    <i class="fas fa-globe"></i> <span data-i18n="tab_ops">Operasyon</span>
+                </button>
+            </nav>
+
+            <section id="tab-blue-team" class="tab-content active">
+                <div class="tab-header">
+                    <h3 data-i18n="blue_header">Yasal Altyapı ve SOC</h3>
+                    <p data-i18n="blue_desc">Kurumsal müşterileri korumak ve pasif geliri artırmak için yasal teknolojiler satın al.</p>
+                </div>
+                <div id="blue-upgrades-container" class="upgrades-list"></div>
+            </section>
+
+            <section id="tab-red-team" class="tab-content">
+                <div id="red-team-lock" class="locked-overlay">
+                    <i class="fas fa-lock fa-3x"></i>
+                    <h3 data-i18n="red_lock_title">KARANLIK AĞ KİLİTLİ</h3>
+                    <p data-i18n="red_lock_desc">Red Team marketine erişmek için en az <strong>Junior SOC Analisti (Lvl 3)</strong> olmalısın. Yeterli XP topla.</p>
+                </div>
+                <div id="red-team-content" class="hidden">
+                    <div class="tab-header border-red">
+                        <h3 class="text-red" data-i18n="red_header">Dark Web Marketi</h3>
+                        <p data-i18n="red_desc">Yasadışı araçlar. Geliri uçurur, yakalanma riskini (OPSEC) azaltır ama İtibar kaybettirir.</p>
+                    </div>
+                    <div id="red-upgrades-container" class="upgrades-list"></div>
+                </div>
+            </section>
+
+            <section id="tab-system" class="tab-content">
+                <div class="tab-header">
+                    <h3 data-i18n="sys_header">Donanım ve Madencilik</h3>
+                    <p data-i18n="sys_desc">Kripto para kaz. Unutma; elektrik faturan ve soğutma giderlerin (Gider Akışı) artacaktır.</p>
+                </div>
+                <div class="mining-stats-panel">
+                    <div class="hashrate-info">
+                        <span data-i18n="total_hash">Total Hashrate:</span> <span id="total-hashrate">0 TH/s</span>
+                    </div>
+                    <div class="power-info">
+                        <span data-i18n="monthly_power">Aylık Elektrik:</span> <span id="power-cost" class="text-red">-0 ₺</span>
+                    </div>
+                    <div class="heat-info mt-10" style="padding-top:10px; border-top:1px dashed var(--border-light);">
+                        <span data-i18n="server_heat">Sunucu Isısı:</span> <span id="server-heat-val" style="font-weight:bold;">%0</span> 
+                        <span id="heat-warning" class="text-red hidden pulse-fast ml-10">
+                            <i class="fas fa-fire"></i> <span data-i18n="overheat_warn">AŞIRI ISINMA!</span>
+                        </span>
+                    </div>
+                </div>
+                <div id="sys-upgrades-container" class="upgrades-list mt-15"></div>
+            </section>
+
+            <section id="tab-ops" class="tab-content">
+                <div class="tab-header">
+                    <h3 data-i18n="ops_header">Aktif Operasyonlar</h3>
+                    <p data-i18n="ops_desc">Otomasyon beklemeden kendi yeteneğinle para ve itibar kazan.</p>
+                </div>
+                
+                <div class="action-card">
+                    <div class="action-icon">
+                        <i class="fas fa-bug"></i>
+                    </div>
+                    <div class="action-details">
+                        <h4 data-i18n="bug_bounty_title">Bug Bounty Avı (Açık Ara)</h4>
+                        <p data-i18n="bug_bounty_desc">Büyük sistemleri tara. Ödül bulma şansı: %15. Maliyet: 1000 ₺</p>
+                    </div>
+                    <button id="btn-bug-bounty" class="btn-primary" data-i18n="start_scan">Taramayı Başlat</button>
+                </div>
+
+                <div class="action-card mt-15 border-gold">
+                    <div class="action-icon text-gold">
+                        <i class="fas fa-flag"></i>
+                    </div>
+                    <div class="action-details">
+                        <h4 data-i18n="ctf_title">Global CTF Turnuvası</h4>
+                        <p data-i18n="ctf_desc">Uluslararası yarışma. Kazanırsan devasa XP ve BTC ödülü. (Level 4 Gerekli)</p>
+                        <div class="ctf-cooldown">
+                            <span data-i18n="time_left">Kalan Süre:</span> <span id="ctf-timer" data-i18n="not_active">Aktif Değil</span>
+                        </div>
+                    </div>
+                    <button id="btn-join-ctf" class="btn-gold" disabled data-i18n="join_tourney">Turnuvaya Katıl</button>
+                </div>
+            </section>
+        </aside>
+
+        <section class="workspace-area">
+            
+            <div id="panic-meter-container" class="panic-meter hidden">
+                <div class="panic-header">
+                    <span id="panic-title" class="pulse-text">
+                        <i class="fas fa-exclamation-triangle"></i> DİKKAT: SİBER OLAY TESPİT EDİLDİ
+                    </span>
+                    <span id="panic-countdown" class="timer-text">180s</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div id="panic-progress-fill" class="progress-fill"></div>
+                </div>
+            </div>
+
+            <div class="screens-container">
+                <div id="screen-idle" class="dynamic-screen active">
+                    <div class="setup-visual">
+                        <div id="desk-setup" class="desk-level-1"></div>
+                        <div class="radar-scanner"></div>
+                    </div>
+                    <h2 class="mt-20" data-i18n="idle_title">Sistemler İzleniyor...</h2>
+                    <p class="text-sub" data-i18n="idle_desc">Güvenlik duvarı aktif. Personel çalışıyor. Gözünüz loglarda olsun.</p>
+                </div>
+
+                <div id="screen-email" class="dynamic-screen hidden">
+                    <div class="app-window email-app">
+                        <div class="app-header">
+                            <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+                            <div class="app-title" data-i18n="email_client">SecureMail İstemcisi</div>
+                        </div>
+                        <div class="email-content">
+                            <div class="email-meta">
+                                <div class="meta-row"><span class="meta-label" data-i18n="from">Kimden:</span> <span id="email-sender" class="meta-value font-mono"></span></div>
+                                <div class="meta-row"><span class="meta-label" data-i18n="target_url">Hedef URL:</span> <span id="email-target-url" class="meta-value text-red font-mono hidden-url"></span></div>
+                            </div>
+                            <h3 id="email-subject" class="email-subject"></h3>
+                            <div id="email-body" class="email-body-text"></div>
+                            <div class="email-action-area">
+                                <button id="email-fake-btn" class="phishing-lure-btn" data-i18n="proceed_action">İşleme Devam Et</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="decision-bar">
+                        <button class="decision-btn btn-block" data-action="block"><i class="fas fa-ban"></i> <span data-i18n="btn_block">Tehdit (Engelle)</span></button>
+                        <button class="decision-btn btn-allow" data-action="allow"><i class="fas fa-check-circle"></i> <span data-i18n="btn_allow">Güvenli (İzin Ver)</span></button>
+                    </div>
+                </div>
+
+                <div id="screen-whatsapp" class="dynamic-screen hidden">
+                    <div class="app-window wa-app">
+                        <div class="wa-app-header">
+                            <div class="wa-avatar"><i class="fas fa-user-tie"></i></div>
+                            <div class="wa-contact-info">
+                                <div id="wa-sender" class="wa-name"></div>
+                                <div class="wa-status" data-i18n="online">çevrimiçi</div>
+                            </div>
+                        </div>
+                        <div class="wa-chat-area">
+                            <div id="wa-chat-history"></div>
+                        </div>
+                    </div>
+                    <div class="decision-bar">
+                        <button class="decision-btn btn-block" data-action="block"><i class="fas fa-ban"></i> <span data-i18n="btn_scammer">Dolandırıcı (Engelle)</span></button>
+                        <button class="decision-btn btn-allow" data-action="allow"><i class="fas fa-check-circle"></i> <span data-i18n="btn_real">Gerçek (Uygula)</span></button>
+                    </div>
+                </div>
+
+                <div id="screen-terminal" class="dynamic-screen hidden">
+                    <div class="app-window terminal-app">
+                        <div class="app-header terminal-header">
+                            <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+                            <div class="app-title">root@soc-incident-response:~#</div>
+                        </div>
+                        <div class="terminal-body">
+                            <div id="terminal-output" class="terminal-text font-code"></div>
+                            <div class="hint-area mt-15">
+                                <button id="btn-use-hint" class="btn-hint"><i class="fas fa-lightbulb"></i> <span data-i18n="get_hint">İpucu Al (-5.000 ₺)</span></button>
+                                <span id="hint-text" class="text-yellow hidden ml-10"></span>
+                            </div>
+                            <div id="terminal-options" class="terminal-options-grid mt-20"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="screen-opsec" class="dynamic-screen hidden">
+                    <div class="opsec-alert-box">
+                        <i class="fas fa-siren-on fa-4x text-red pulse-fast"></i>
+                        <h1 class="text-red mt-15" data-i18n="opsec_title">KRİTİK UYARI: İZLENİYORSUNUZ</h1>
+                        <p class="mt-10 opsec-desc" data-i18n="opsec_desc">Saldırı tamamlandı ancak hedef sistemin savunması IP adresinizi tespit etmek üzere. Acilen OPSEC uygulayın!</p>
+                        <div class="stealth-check-info mt-20">
+                            <span data-i18n="current_stealth">Mevcut Gizlilik Oranınız:</span> <strong id="opsec-stealth-val" class="text-yellow">%0</strong><br>
+                        </div>
+                        <div class="opsec-actions mt-30">
+                            <button id="btn-wipe-logs" class="btn-danger-large"><i class="fas fa-fire"></i> <span data-i18n="wipe_logs">LOGLARI SİL VE ÇIK (Zar At)</span></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="screen-bugbounty" class="dynamic-screen hidden">
+                    <div class="app-window scanner-app">
+                        <div class="app-header">
+                            <div class="app-title"><i class="fas fa-spider"></i> AutoScanner Pro v2.0</div>
+                        </div>
+                        <div class="scanner-body text-center">
+                            <div id="scanner-animation" class="mt-20 mb-20">
+                                <i class="fas fa-circle-notch fa-spin fa-3x text-accent"></i>
+                                <h3 class="mt-15" data-i18n="scanning">Hedef Sistem Taranıyor...</h3>
+                            </div>
+                            <div id="scanner-result" class="hidden mt-20">
+                                <i id="scanner-result-icon" class="fa-4x mb-15"></i>
+                                <h2 id="scanner-result-title"></h2>
+                                <p id="scanner-result-desc" class="mt-10 text-sub"></p>
+                                <button id="btn-scanner-close" class="btn-primary mt-20" data-i18n="return_hq">Merkeze Dön</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div> 
+        </section>
+
+        <div id="guide-panel" class="guide-sidebar">
+            <div class="guide-header">
+                <h2><i class="fas fa-book-journal-whills"></i> <span data-i18n="guide_title">Siber Rehber</span></h2>
+                <button class="close-guide-btn" onclick="document.getElementById('guide-panel').classList.remove('open')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="guide-content">
+                <div class="guide-section">
+                    <h3 data-i18n="guide_net_title"><i class="fas fa-network-wired"></i> Temel Ağ Komutları</h3>
+                    <ul class="guide-list">
+                        <li><strong>nmap [IP]</strong>: <span data-i18n="guide_nmap">Hedef IP'deki açık portları hızlıca tarar.</span></li>
+                        <li><strong>nmap -sV [IP]</strong>: <span data-i18n="guide_nmap_sv">Açık portlardaki servislerin versiyonunu tespit eder.</span></li>
+                        <li><strong>netstat -antp</strong>: <span data-i18n="guide_netstat">Aktif bağlantıları ve açık portları listeler (Backdoor avı için).</span></li>
+                        <li><strong>ifconfig eth0 down</strong>: <span data-i18n="guide_ifconfig">İnternet bağlantısını anında keser (Fidye yazılımı için).</span></li>
+                    </ul>
+                </div>
+                
+                <div class="guide-section">
+                    <h3 data-i18n="guide_red_title"><i class="fas fa-bug"></i> Sızma (Red Team) Araçları</h3>
+                    <ul class="guide-list">
+                        <li><strong>sqlmap -u "URL" --dbs</strong>: <span data-i18n="guide_sqlmap">SQL Injection açıklarını sömürür.</span></li>
+                        <li><strong>dirb [URL]</strong>: <span data-i18n="guide_dirb">Gizli admin veya yedek klasörlerini zorla (brute-force) bulur.</span></li>
+                        <li><strong>hydra -L [user] -P [pass] ftp://[IP]</strong>: <span data-i18n="guide_hydra">Kaba kuvvet saldırısı yapar.</span></li>
+                        <li><strong>john --wordlist=[dosya] hash.txt</strong>: <span data-i18n="guide_john">Şifrelenmiş (hash) metinleri kırmaya çalışır.</span></li>
+                        <li><strong>nc -lvnp 4444</strong>: <span data-i18n="guide_nc">Reverse shell için port dinler.</span></li>
+                    </ul>
+                </div>
+
+                <div class="guide-section">
+                    <h3 data-i18n="guide_blue_title"><i class="fas fa-shield-halved"></i> Savunma (Blue Team) Komutları</h3>
+                    <ul class="guide-list">
+                        <li><strong>iptables -A INPUT -s [IP] -j DROP</strong>: <span data-i18n="guide_iptables">Belirli bir IP'den gelen trafiği engeller.</span></li>
+                        <li><strong>find / -perm -4000</strong>: <span data-i18n="guide_find">SUID yetkili dosyaları arar.</span></li>
+                        <li><strong>cat /var/log/auth.log</strong>: <span data-i18n="guide_cat">Linux giriş (SSH) log dosyasıdır.</span></li>
+                    </ul>
+                </div>
+                
+                <div class="guide-section" style="border-left: 3px solid var(--warning); padding-left: 10px;">
+                    <p style="font-size: 0.85rem; color: var(--text-sub);">
+                        <em data-i18n="guide_tip">İpucu: Terminalde TAB tuşuna basarak komutu otomatik tamamlayabilirsiniz.</em>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div id="achievements-panel" class="guide-sidebar">
+            <div class="guide-header">
+                <h2><i class="fas fa-trophy text-gold"></i> <span data-i18n="ach_title">Başarımlar</span></h2>
+                <button class="close-guide-btn" onclick="document.getElementById('achievements-panel').classList.remove('open')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="guide-content" id="achievements-list"></div>
+        </div>
+
+        <div id="settings-panel" class="guide-sidebar">
+            <div class="guide-header">
+                <h2><i class="fas fa-cog text-muted"></i> <span data-i18n="settings_title">Sistem Ayarları</span></h2>
+                <button class="close-guide-btn" onclick="document.getElementById('settings-panel').classList.remove('open')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="guide-content">
+                <div class="settings-group">
+                    <label for="vol-slider"><i class="fas fa-volume-up"></i> <span data-i18n="set_vol">Genel Ses Seviyesi:</span> <span id="vol-display">%50</span></label>
+                    <input type="range" id="vol-slider" class="cyber-slider" min="0" max="100" value="50">
+                </div>
+                <div class="settings-group">
+                    <label for="alarm-select"><i class="fas fa-exclamation-triangle"></i> <span data-i18n="set_alarm">Kritik Alarm Sesi (Boss & Isınma)</span></label>
+                    <select id="alarm-select" class="cyber-select">
+                        <option value="siren" data-i18n="opt_siren">🚨 Hava Saldırısı Sireni (Klasik)</option>
+                        <option value="sonar" data-i18n="opt_sonar">🌊 Denizaltı Sonarı (Gerilim)</option>
+                        <option value="metalgear" data-i18n="opt_metalgear">❗ Ani Şok (Panik)</option>
+                        <option value="nolan" data-i18n="opt_nolan">🎥 Sinematik Bas (Tok Ses)</option>
+                    </select>
+                    <button id="btn-test-alarm" class="btn-test-sound"><i class="fas fa-play"></i> <span data-i18n="btn_test">Seçili Sesi Test Et</span></button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <div id="toast-container" class="toast-wrapper"></div>
+    
+    <script src="senaryolar.js"></script>
+    <script src="oyun_motoru.js"></script>
+</body>
+</html>
